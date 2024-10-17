@@ -196,10 +196,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
     private void setComboBoxSampleData(ComboBox<SampleItem> comboBox) {
         List<SampleItem> sampleItems = new ArrayList<>();
+        sampleItems.add(new SampleItem("Zero", "Zero", null));
         sampleItems.add(new SampleItem("One", "One", null));
-        sampleItems.add(new SampleItem("Two", "Two", null));
-        sampleItems.add(new SampleItem("Three", "Three", Boolean.TRUE));
-        sampleItems.add(new SampleItem("Four", "Four", null));
+        sampleItems.add(new SampleItem("Two", "Two", Boolean.TRUE));
+        sampleItems.add(new SampleItem("Three", "Three", null));
         comboBox.setItems(sampleItems);
         comboBox.setItemLabelGenerator(SampleItem::label);
     }
