@@ -51,7 +51,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private DatePicker datePicker;
     private DatePicker datePicker2;
 
-
+    private TextField budgetText;
+    private Button budgetButton;
 
 
 
@@ -60,7 +61,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
-            String reply= conversation.askQuestion(resultParagraph.getText(), "can you help me plan");
+            String reply= conversation.askQuestion(resultParagraph.getText(), "can you give me range about budget of this travel");
             replyText.setText(reply);
             askText.clear();
         }
@@ -71,7 +72,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
-            String followUpQuestion = followText.getValue();
+            String followUpQuestion = followText.getValue()+budgetText.getValue();
             String currentPlan = resultParagraph.getText();
             String followUpReply= conversation.askQuestion(currentPlan, followUpQuestion);
             followReplyText.setText(followUpReply);
@@ -113,10 +114,22 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         followButton.setWidth("min-content");
         followButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
+
+
         followReplyText = new Paragraph();
         followReplyText.setWidth("100%");
         followReplyText.setHeight("600px");
         followReplyText.getStyle().set("border", "1px solid black");
+
+
+        budgetText = new TextField();
+        budgetText.setLabel("Please input your budget, so we plan this travel according your budget");
+        budgetText.setWidth("100%");
+
+        budgetButton = new Button();
+        budgetButton.setText("Budget");
+        budgetButton.setWidth("min-content");
+        budgetButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         travelersField = new TextField();
         petComboBox = new ComboBox<>();
@@ -164,7 +177,6 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         submitButton = new Button("Confirm");
         submitButton.setWidth("min-content");
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
         submitButton.addClickListener(click -> {
             String travelers = travelersField.getValue();
             String pet = petComboBox.getValue() != null ? petComboBox.getValue().label() : "No Pet";
@@ -193,6 +205,16 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         });
 
 
+        datePicker.addValueChangeListener(event -> {
+            LocalDate selectedStartDate = event.getValue();
+            if (selectedStartDate != null) {
+                datePicker2.setMin(selectedStartDate.plusDays(1));
+            } else {
+                datePicker2.setMin(null);
+            }
+        });
+
+
         // Apply the same styles as in HomeView's replyText
         resultParagraph.setWidth("80%");
         resultParagraph.setHeight("100px");
@@ -211,6 +233,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         followButtonLayout.setWidthFull(); // Set the layout to full width
         followButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START); // Align button to the left
 
+        HorizontalLayout budgetButtonLayout = new HorizontalLayout(budgetButton);
+        budgetButtonLayout.setWidthFull(); // Set the layout to full width
+        budgetButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
         // Layout configuration
         getContent().setWidth("100%");
@@ -219,7 +244,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, buttonLayout,replyText,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, buttonLayout,replyText,budgetText,budgetButtonLayout,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
     }
