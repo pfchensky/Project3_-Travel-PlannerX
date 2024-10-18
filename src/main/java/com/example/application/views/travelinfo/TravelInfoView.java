@@ -6,6 +6,7 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -16,6 +17,9 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import ai.peoplecode.OpenAIConversation;
@@ -41,6 +45,12 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private TextField followText;
     private Paragraph followReplyText;
     private Button followButton;
+
+    private DatePicker datePicker;
+    private DatePicker datePicker2;
+
+
+
 
 
     class MyClickListener
@@ -89,7 +99,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         replyText = new Paragraph();
         replyText.setWidth("100%");
-        replyText.setHeight("400px");
+        replyText.setHeight("600px");
         replyText.getStyle().set("border", "1px solid black");
 
         followText = new TextField();
@@ -103,7 +113,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         followReplyText = new Paragraph();
         followReplyText.setWidth("100%");
-        followReplyText.setHeight("500px");
+        followReplyText.setHeight("600px");
         followReplyText.getStyle().set("border", "1px solid black");
 
         travelersField = new TextField();
@@ -113,6 +123,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         durationField = new TextField();
         destinationField = new TextField();
         resultParagraph = new Paragraph();
+        datePicker = new DatePicker();
+        datePicker2 = new DatePicker();
 
 
         // Set labels and width for each field
@@ -136,6 +148,12 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         destinationField.setLabel("Destination");
         destinationField.setWidth("100%");
 
+        datePicker.setLabel("Start Date");
+        datePicker.setWidth("100%");
+
+        datePicker2.setLabel("End Date");
+        datePicker2.setWidth("100%");
+
         // Button to collect the data and display the result
         submitButton = new Button("Confirm");
         submitButton.setWidth("min-content");
@@ -149,10 +167,18 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             String duration = durationField.getValue();
             String destination = destinationField.getValue();
 
-            // Create a paragraph with all the collected information
+            // Get the date values from the DatePickers
+            LocalDate startDate = datePicker.getValue();
+            LocalDate endDate = datePicker2.getValue();
+
+            // Format the dates, if they are not null
+            String startDateString = startDate != null ? startDate.toString() : "Not selected";
+            String endDateString = endDate != null ? endDate.toString() : "Not selected";
+
+            // Create a paragraph with all the collected information, including dates
             String resultText = String.format(
-                    "Travelers: %s, Pet: %s, Children: %s, Departure: %s, Duration: %s days, Destination: %s",
-                    travelers, pet, children, departure, duration, destination
+                    "Travelers: %s, Pet: %s, Children: %s, Departure: %s, Start Date: %s, End Date: %s, Duration: %s days, Destination: %s",
+                    travelers, pet, children, departure, startDateString, endDateString, duration, destination
             );
 
             // Display the result in the paragraph
@@ -186,7 +212,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, durationField, destinationField,buttonLayout,replyText,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, datePicker,datePicker2,durationField, destinationField,buttonLayout,replyText,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
     }
@@ -202,6 +228,16 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         sampleItems.add(new SampleItem("Three", "Three", null));
         comboBox.setItems(sampleItems);
         comboBox.setItemLabelGenerator(SampleItem::label);
+    }
+    private List<Integer> getDaysOfMonth(Month month, int year) {
+        List<Integer> days = new ArrayList<>();
+        int lengthOfMonth = month.length(LocalDate.of(year, month, 1).isLeapYear());
+
+        for (int day = 1; day <= lengthOfMonth; day++) {
+            days.add(day);
+        }
+
+        return days;
     }
 
 
