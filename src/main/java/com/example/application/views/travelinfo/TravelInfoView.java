@@ -145,7 +145,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         departureField.setLabel("Departure From");
         departureField.setWidth("100%");
 
-        durationField.setLabel("Duration (Days and season or month)");
+        durationField.setLabel("Duration (If you have exactly date, you can leave it empty.)");
         durationField.setWidth("100%");
 
         destinationField.setLabel("Destination");
