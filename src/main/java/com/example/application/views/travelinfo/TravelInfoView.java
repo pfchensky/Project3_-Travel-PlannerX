@@ -212,7 +212,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, datePicker,datePicker2,durationField, destinationField,buttonLayout,replyText,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,durationField, buttonLayout,replyText,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
     }
