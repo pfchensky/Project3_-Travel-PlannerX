@@ -35,6 +35,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private TextField departureField;
     private TextField durationField;
     private TextField destinationField;
+    private TextField monthField;
+
     private Paragraph resultParagraph;
     private Button submitButton;
 
@@ -122,6 +124,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         departureField = new TextField();
         durationField = new TextField();
         destinationField = new TextField();
+        monthField = new TextField();
         resultParagraph = new Paragraph();
         datePicker = new DatePicker();
         datePicker2 = new DatePicker();
@@ -142,16 +145,19 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         departureField.setLabel("Departure From");
         departureField.setWidth("100%");
 
-        durationField.setLabel("Duration (Days)");
+        durationField.setLabel("Duration (Days and season or month)");
         durationField.setWidth("100%");
 
         destinationField.setLabel("Destination");
         destinationField.setWidth("100%");
 
-        datePicker.setLabel("Start Date");
+        monthField.setLabel("Which month do you want to travel?(If you have exactly date, you can leave it empty.)");
+        monthField.setWidth("100%");
+
+        datePicker.setLabel("Start Date(If you don't have exactly date, you can leave it empty.)");
         datePicker.setWidth("100%");
 
-        datePicker2.setLabel("End Date");
+        datePicker2.setLabel("End Date(If you don't have exactly date, you can leave it empty.)");
         datePicker2.setWidth("100%");
 
         // Button to collect the data and display the result
@@ -166,6 +172,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             String departure = departureField.getValue();
             String duration = durationField.getValue();
             String destination = destinationField.getValue();
+            String month = monthField.getValue();
 
             // Get the date values from the DatePickers
             LocalDate startDate = datePicker.getValue();
@@ -177,8 +184,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
             // Create a paragraph with all the collected information, including dates
             String resultText = String.format(
-                    "Travelers: %s, Pet: %s, Children: %s, Departure: %s, Start Date: %s, End Date: %s, Duration: %s days, Destination: %s",
-                    travelers, pet, children, departure, startDateString, endDateString, duration, destination
+                    "Travelers: %s, Pet: %s, Children: %s, Departure: %s, Start Date: %s, End Date: %s, Duration: %s days, Destination: %s, Months: %s,",
+                    travelers, pet, children, departure, startDateString, endDateString, duration, destination,month
             );
 
             // Display the result in the paragraph
@@ -212,7 +219,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,durationField, buttonLayout,replyText,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, buttonLayout,replyText,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
     }
