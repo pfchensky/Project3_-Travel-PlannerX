@@ -51,6 +51,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private DatePicker datePicker;
     private DatePicker datePicker2;
 
+    private TextField quotaText;
+    private Button quotaButton;
+
     private TextField budgetText;
     private Button budgetButton;
 
@@ -61,9 +64,22 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
-            String reply= conversation.askQuestion(resultParagraph.getText(), "can you give me range about budget of this travel");
+            collectAndDisplayTravelInfo();
+            String reply= conversation.askQuestion(resultParagraph.getText()+"plan with new budget"+budgetText.getValue(), "help me plan this trip. ");
             replyText.setText(reply);
             askText.clear();
+        }
+    }
+
+    class QuotaClickListener
+            implements ComponentEventListener<ClickEvent<Button>> {
+
+        @Override
+        public void onComponentEvent(ClickEvent<Button> event) {
+            collectAndDisplayTravelInfo();
+            String reply= conversation.askQuestion(resultParagraph.getText(), "give me a range for total cost value number. ");
+            quotaText.setValue(reply);
+            //quotaText.clear();
         }
     }
 
@@ -72,6 +88,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
+            collectAndDisplayTravelInfo();
             String followUpQuestion = followText.getValue()+budgetText.getValue();
             String currentPlan = resultParagraph.getText();
             String followUpReply= conversation.askQuestion(currentPlan, followUpQuestion);
@@ -96,7 +113,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         askText.setWidth("400px");
 
         askButton = new Button();
-        askButton.setText("Generate Your Plan");
+        askButton.setText("Generate the plan");
         askButton.setWidth("min-content");
         askButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -122,8 +139,17 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         followReplyText.getStyle().set("border", "1px solid black");
 
 
+        quotaText = new TextField();
+        //quotaText.setLabel("you can get your budget");
+        quotaText.setWidth("100%");
+
+        quotaButton = new Button();
+        quotaButton.setText("Get a quota");
+        quotaButton.setWidth("min-content");
+        quotaButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         budgetText = new TextField();
-        budgetText.setLabel("Please input your budget, so we plan this travel according your budget");
+        budgetText.setLabel("Please give me your budget");
         budgetText.setWidth("100%");
 
         budgetButton = new Button();
@@ -177,32 +203,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         submitButton = new Button("Confirm");
         submitButton.setWidth("min-content");
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        submitButton.addClickListener(click -> {
-            String travelers = travelersField.getValue();
-            String pet = petComboBox.getValue() != null ? petComboBox.getValue().label() : "No Pet";
-            String children = childrenComboBox.getValue() != null ? childrenComboBox.getValue().label() : "No Children";
-            String departure = departureField.getValue();
-            String duration = durationField.getValue();
-            String destination = destinationField.getValue();
-            String month = monthField.getValue();
-
-            // Get the date values from the DatePickers
-            LocalDate startDate = datePicker.getValue();
-            LocalDate endDate = datePicker2.getValue();
-
-            // Format the dates, if they are not null
-            String startDateString = startDate != null ? startDate.toString() : "Not selected";
-            String endDateString = endDate != null ? endDate.toString() : "Not selected";
-
-            // Create a paragraph with all the collected information, including dates
-            String resultText = String.format(
-                    "Travelers: %s, Pet: %s, Children: %s, Departure: %s, Start Date: %s, End Date: %s, Duration: %s days, Destination: %s, Months: %s,",
-                    travelers, pet, children, departure, startDateString, endDateString, duration, destination,month
-            );
-
-            // Display the result in the paragraph
-            resultParagraph.setText(resultText);
-        });
+        submitButton.addClickListener(click ->{collectAndDisplayTravelInfo();});
 
 
         datePicker.addValueChangeListener(event -> {
@@ -222,11 +223,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         //resultParagraph.getStyle().set("padding", "15px");
         //resultParagraph.getStyle().set("margin-top", "20px");
 
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        buttonLayout.add(submitButton, askButton);
-        buttonLayout.setSpacing(true); // Adds spacing between the buttons
-        buttonLayout.setWidthFull(); // Set the layout to full width
-        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START); // Align buttons to the left
+        HorizontalLayout askButtonLayout = new HorizontalLayout(askButton);
+        askButtonLayout.setWidthFull(); // Set the layout to full width
+        askButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START); // Align buttons to the left
 
         // For the follow-up button, put it in a separate layout if needed
         HorizontalLayout followButtonLayout = new HorizontalLayout(followButton);
@@ -237,6 +236,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         budgetButtonLayout.setWidthFull(); // Set the layout to full width
         budgetButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
+        HorizontalLayout quotaButtonLayout = new HorizontalLayout(quotaButton);
+        quotaButtonLayout.setWidthFull(); // Set the layout to full width
+        quotaButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+
         // Layout configuration
         getContent().setWidth("100%");
         getContent().getStyle().set("flex-grow", "1");
@@ -244,9 +247,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, buttonLayout,replyText,budgetText,budgetButtonLayout,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, quotaButtonLayout,quotaText,budgetText,askButtonLayout,replyText,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
+        quotaButton.addClickListener(new QuotaClickListener());
     }
 
     record SampleItem(String value, String label, Boolean disabled) {
@@ -271,6 +275,34 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         return days;
     }
+    private void collectAndDisplayTravelInfo(){
+        String travelers = travelersField.getValue();
+        String pet = petComboBox.getValue() != null ? petComboBox.getValue().label() : "No Pet";
+        String children = childrenComboBox.getValue() != null ? childrenComboBox.getValue().label() : "No Children";
+        String departure = departureField.getValue();
+        String duration = durationField.getValue();
+        String destination = destinationField.getValue();
+        String month = monthField.getValue();
+
+        // Get the date values from the DatePickers
+        LocalDate startDate = datePicker.getValue();
+        LocalDate endDate = datePicker2.getValue();
+
+        // Format the dates, if they are not null
+        String startDateString = startDate != null ? startDate.toString() : "Not selected";
+        String endDateString = endDate != null ? endDate.toString() : "Not selected";
+
+        // Create a paragraph with all the collected information, including dates
+        String resultText = String.format(
+                "Travelers: %s, Pet: %s, Children: %s, Departure: %s, Start Date: %s, End Date: %s, Duration: %s days, Destination: %s, Months: %s,",
+                travelers, pet, children, departure, startDateString, endDateString, duration, destination,month
+        );
+
+        // Display the result in the paragraph
+        resultParagraph.setText(resultText);
+    }
+
+
 
 
 }
