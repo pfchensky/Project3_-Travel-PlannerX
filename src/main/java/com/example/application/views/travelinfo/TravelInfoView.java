@@ -23,6 +23,8 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import ai.peoplecode.OpenAIConversation;
+import com.vaadin.flow.component.notification.Notification;
+import java.time.temporal.ChronoUnit;
 
 @PageTitle("")
 @Menu(icon = "line-awesome/svg/user.svg", order = 0)
@@ -65,7 +67,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
-            String reply= conversation.askQuestion(resultParagraph.getText()+"plan with new budget"+budgetText.getValue(), "help me plan this trip. ");
+            String budget=budgetText.getValue();
+            String reply= conversation.askQuestion(resultParagraph.getText(),"generate a detailed daily travel plan for this trip arround the budget of "+budget +" users' currency "+" please only present daily total cost and daily plan. please present results for each day as day# or date, activities, any highlight, accommodation, transpotation, total cost, and daily hints.");
             replyText.setText(reply);
             askText.clear();
         }
@@ -77,7 +80,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
-            String reply= conversation.askQuestion(resultParagraph.getText(), "give me a range for total cost value number. ");
+            String reply= conversation.askQuestion(resultParagraph.getText(), "Estimate the total cost range for this trip.  please present only number range without other description. the range shows in users' currency and exchange to local currency. please only present digit number range and both currencies signs. eg. 1 usd/7CNY");
             quotaText.setValue(reply);
             //quotaText.clear();
         }
@@ -104,6 +107,40 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         }
         return apiKey;
     }
+    private void adjustTextAreasHeight(){
+        LocalDate startDate=datePicker.getValue();
+        LocalDate endDate=datePicker2.getValue();
+        String durationInput=durationField.getValue();
+        int rowHeight=35;
+        int rowsPerday=2;
+        int minH=100;
+        if(startDate!=null&&endDate!=null){
+            long durationDay=ChronoUnit.DAYS.between(startDate,endDate)-1;
+            if(durationDay>=15&&durationDay<=30)
+            {durationDay=durationDay-4;}
+            else if(durationDay>30){
+                durationDay=durationDay-8;
+            }
+            int height=(int)Math.max(minH,durationDay*rowsPerday*rowHeight);
+            replyText.setHeight(height+"px");
+            followReplyText.setHeight(height+"px");
+        }else if(!durationInput.isEmpty()){
+            try{
+                int durationDay=Integer.parseInt(durationInput);
+                if(durationDay>=15&&durationDay<=30)
+                {durationDay=durationDay-4;}
+                else if(durationDay>30){
+                    durationDay=durationDay-8;
+                }
+                int height=(int)Math.max(minH,durationDay*rowHeight*rowsPerday);
+                replyText.setHeight(height+"px");
+                followReplyText.setHeight(height+"px");
+            }catch (NumberFormatException e){
+                replyText.setHeight("100px");
+                followReplyText.setHeight("100px");
+            }
+        }
+    }
 
     public TravelInfoView() {
         conversation = new OpenAIConversation(getOpenAIKey(), "gpt-4o-mini");
@@ -119,8 +156,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         replyText = new Paragraph();
         replyText.setWidth("100%");
-        replyText.setHeight("600px");
-        replyText.getStyle().set("border", "1px solid black");
+
+        replyText.getStyle().remove("border");
 
         followText = new TextField();
         followText.setLabel("If you have additional needs or requirements, please type below");
@@ -135,8 +172,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
         followReplyText = new Paragraph();
         followReplyText.setWidth("100%");
-        followReplyText.setHeight("600px");
-        followReplyText.getStyle().set("border", "1px solid black");
+        followReplyText.getStyle().remove("border");
 
 
         quotaText = new TextField();
@@ -149,7 +185,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         quotaButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         budgetText = new TextField();
-        budgetText.setLabel("Please give me your budget");
+        budgetText.setLabel("Please give me your budget in your currency");
         budgetText.setWidth("100%");
 
         budgetButton = new Button();
@@ -204,8 +240,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         submitButton.setWidth("min-content");
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         submitButton.addClickListener(click ->{collectAndDisplayTravelInfo();});
-
-
+        durationField.addValueChangeListener(event ->adjustTextAreasHeight() );
+        datePicker.addValueChangeListener(event ->adjustTextAreasHeight() );
+        datePicker2.addValueChangeListener(event ->adjustTextAreasHeight() );
         datePicker.addValueChangeListener(event -> {
             LocalDate selectedStartDate = event.getValue();
             if (selectedStartDate != null) {
@@ -301,8 +338,6 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         // Display the result in the paragraph
         resultParagraph.setText(resultText);
     }
-
-
 
 
 }
