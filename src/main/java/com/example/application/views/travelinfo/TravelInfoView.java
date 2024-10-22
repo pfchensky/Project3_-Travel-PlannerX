@@ -25,6 +25,8 @@ import java.util.List;
 import ai.peoplecode.OpenAIConversation;
 import com.vaadin.flow.component.notification.Notification;
 import java.time.temporal.ChronoUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @PageTitle("")
 @Menu(icon = "line-awesome/svg/user.svg", order = 0)
@@ -61,19 +63,84 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
 
 
-    class MyClickListener
-            implements ComponentEventListener<ClickEvent<Button>> {
+
+    class MyClickListener implements ComponentEventListener<ClickEvent<Button>> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
-            String budget=budgetText.getValue();
-            String reply= conversation.askQuestion(resultParagraph.getText(),"generate a detailed daily travel plan for this trip arround the budget of "+budget +" users' currency "+" please only present daily total cost and daily plan. please present results for each day as day# or date, activities, any highlight, accommodation, transpotation, total cost, and daily hints.");
-            replyText.setText(reply);
+            String budget = budgetText.getValue();
+
+            // Ask the conversation model for a detailed daily travel plan
+            String reply = conversation.askQuestion(resultParagraph.getText(),
+                    "generate a detailed daily travel plan for this trip.Try to spend around the budget of " +
+                            budget + " users' currency. Please only present the daily total cost and daily plan. " +
+                            "Present results for each day as day# or date, activities, any highlight, " +
+                            "accommodation, transportation, total cost, and daily hints. Please write Total Trip Cost: in the end.");
+
+            // Convert the reply string into a StringBuilder for manipulation
+            StringBuilder formattedReply = new StringBuilder(reply);
+
+            // Regular expression to match date format YYYY-MM-DD
+            String datePattern = "\\d{4}-\\d{2}-\\d{2}";
+            Pattern pattern = Pattern.compile(datePattern);
+            Matcher matcher;
+
+            // Loop through the reply to replace both "### Day #" and dates with <h3> tags, smaller size
+            int index = 0;
+            while (index < formattedReply.length()) {
+                // Check for a date occurrence using regex (YYYY-MM-DD)
+                matcher = pattern.matcher(formattedReply.substring(index));
+                if (matcher.find() && matcher.start() == 0) {
+                    // Replace date with <h3>DATE</h3>, using smaller text for the date
+                    formattedReply.insert(index, "<h3 style='font-size: 18px;'>");
+                    int endOfDateIndex = matcher.end() + index;
+                    formattedReply.insert(endOfDateIndex, "</h3>");
+                    index = endOfDateIndex + "</h3>".length();
+                }
+                // If no date is found, check for "### Day" occurrence
+                else if (formattedReply.indexOf("### Day", index) == index) {
+                    // Replace "###" with <h3> and insert </h3> at the end of the line, with smaller text
+                    formattedReply.replace(index, index + 3, "<h3 style='font-size: 18px;'>");
+                    int endOfLineIndex = formattedReply.indexOf("\n", index);
+                    if (endOfLineIndex == -1) {
+                        endOfLineIndex = formattedReply.length();
+                    }
+                    formattedReply.insert(endOfLineIndex, "</h3>");
+                    index = endOfLineIndex + "</h3>".length();
+                }
+                // If "Total Trip Cost" is found, insert a new paragraph before it
+                else if (formattedReply.indexOf("### Total Trip Cost", index) == index) {
+                    formattedReply.replace(index, index + 3, "<p><strong>");
+                    int endOfTotalCostIndex = formattedReply.indexOf("\n", index);
+                    if (endOfTotalCostIndex == -1) {
+                        endOfTotalCostIndex = formattedReply.length();
+                    }
+                    formattedReply.insert(endOfTotalCostIndex, "</strong></p>");
+                    index = endOfTotalCostIndex + "</p>".length();
+                }
+                else {
+                    index++;
+                }
+            }
+
+            // Handle Markdown-style bold text (**Activities:** to <strong>Activities:</strong>)
+            int boldStart;
+            while ((boldStart = formattedReply.indexOf("**")) != -1) {
+                formattedReply.replace(boldStart, boldStart + 2, "<strong>");
+                int boldEnd = formattedReply.indexOf("**", boldStart + 7); // After <strong>
+                if (boldEnd != -1) {
+                    formattedReply.replace(boldEnd, boldEnd + 2, "</strong>");
+                }
+            }
+
+            // Set the formatted reply with HTML tags to display the content properly
+            replyText.getElement().setProperty("innerHTML", formattedReply.toString());
+
+            // Clear the input field
             askText.clear();
         }
     }
-
     class QuotaClickListener
             implements ComponentEventListener<ClickEvent<Button>> {
 
@@ -86,16 +153,79 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         }
     }
 
-    class FollowUpClickListener
-            implements ComponentEventListener<ClickEvent<Button>> {
+
+
+    class FollowUpClickListener implements ComponentEventListener<ClickEvent<Button>> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
-            String followUpQuestion = followText.getValue()+budgetText.getValue();
+            String followUpQuestion = followText.getValue() + budgetText.getValue();
             String currentPlan = resultParagraph.getText();
-            String followUpReply= conversation.askQuestion(currentPlan, followUpQuestion);
-            followReplyText.setText(followUpReply);
+
+            // Get the follow-up reply from the conversation model
+            String followUpReply = conversation.askQuestion(currentPlan, followUpQuestion);
+
+            // Convert the follow-up reply string into a StringBuilder for manipulation
+            StringBuilder formattedFollowUpReply = new StringBuilder(followUpReply);
+
+            // Regular expression to match date format YYYY-MM-DD
+            String datePattern = "\\d{4}-\\d{2}-\\d{2}";
+            Pattern pattern = Pattern.compile(datePattern);
+            Matcher matcher;
+
+            // Loop through the follow-up reply to replace both "### Day #" and dates with <h3> tags, smaller size
+            int index = 0;
+            while (index < formattedFollowUpReply.length()) {
+                // Check for a date occurrence using regex (YYYY-MM-DD)
+                matcher = pattern.matcher(formattedFollowUpReply.substring(index));
+                if (matcher.find() && matcher.start() == 0) {
+                    // Replace date with <h3>DATE</h3>, using smaller text for the date
+                    formattedFollowUpReply.insert(index, "<h3 style='font-size: 18px;'>");
+                    int endOfDateIndex = matcher.end() + index;
+                    formattedFollowUpReply.insert(endOfDateIndex, "</h3>");
+                    index = endOfDateIndex + "</h3>".length();
+                }
+                // If no date is found, check for "### Day" occurrence
+                else if (formattedFollowUpReply.indexOf("### Day", index) == index) {
+                    // Replace "###" with <h3> and insert </h3> at the end of the line, with smaller text
+                    formattedFollowUpReply.replace(index, index + 3, "<h3 style='font-size: 18px;'>");
+                    int endOfLineIndex = formattedFollowUpReply.indexOf("\n", index);
+                    if (endOfLineIndex == -1) {
+                        endOfLineIndex = formattedFollowUpReply.length();
+                    }
+                    formattedFollowUpReply.insert(endOfLineIndex, "</h3>");
+                    index = endOfLineIndex + "</h3>".length();
+                }
+                // If "Total Trip Cost" is found, insert a new paragraph before it
+                else if (formattedFollowUpReply.indexOf("### Total Trip Cost", index) == index) {
+                    formattedFollowUpReply.replace(index, index + 3, "<p><strong>");
+                    int endOfTotalCostIndex = formattedFollowUpReply.indexOf("\n", index);
+                    if (endOfTotalCostIndex == -1) {
+                        endOfTotalCostIndex = formattedFollowUpReply.length();
+                    }
+                    formattedFollowUpReply.insert(endOfTotalCostIndex, "</strong></p>");
+                    index = endOfTotalCostIndex + "</p>".length();
+                }
+                else {
+                    index++;
+                }
+            }
+
+            // Handle Markdown-style bold text (**Activities:** to <strong>Activities:</strong>)
+            int boldStart;
+            while ((boldStart = formattedFollowUpReply.indexOf("**")) != -1) {
+                formattedFollowUpReply.replace(boldStart, boldStart + 2, "<strong>");
+                int boldEnd = formattedFollowUpReply.indexOf("**", boldStart + 7); // After <strong>
+                if (boldEnd != -1) {
+                    formattedFollowUpReply.replace(boldEnd, boldEnd + 2, "</strong>");
+                }
+            }
+
+            // Set the formatted follow-up reply with HTML tags to display the content properly
+            followReplyText.getElement().setProperty("innerHTML", formattedFollowUpReply.toString());
+
+            // Clear the input field
             followText.clear();
         }
     }
@@ -112,35 +242,33 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         LocalDate endDate=datePicker2.getValue();
         String durationInput=durationField.getValue();
         int rowHeight=35;
-        int rowsPerday=2;
+        int rowsPerday=4;
         int minH=100;
         if(startDate!=null&&endDate!=null){
             long durationDay=ChronoUnit.DAYS.between(startDate,endDate)-1;
-            if(durationDay<5){
-                durationDay=5;
-            }
+            if(durationDay<3)
+            {durationDay=3;}
             else if(durationDay>=15&&durationDay<=30)
-            {durationDay=durationDay-4;}
+            {durationDay=durationDay-5;}
             else if(durationDay>30){
                 durationDay=durationDay-8;
             }
             int height=(int)Math.max(minH,durationDay*rowsPerday*rowHeight);
-            replyText.setHeight(height+"px");
-            followReplyText.setHeight(height+"px");
+            replyText.setHeight(height+3+"px");
+            followReplyText.setHeight(height+3+"px");
         }else if(!durationInput.isEmpty()){
             try{
                 int durationDay=Integer.parseInt(durationInput);
-                if(durationDay<5){
-                    durationDay=5;
-                }
+                if(durationDay<3)
+                {durationDay=3;}
                 else if(durationDay>=15&&durationDay<=30)
-                {durationDay=durationDay-4;}
+                {durationDay=durationDay-5;}
                 else if(durationDay>30){
                     durationDay=durationDay-8;
                 }
                 int height=(int)Math.max(minH,durationDay*rowHeight*rowsPerday);
-                replyText.setHeight(height+"px");
-                followReplyText.setHeight(height+"px");
+                replyText.setHeight(height+3+"px");
+                followReplyText.setHeight(height+3+"px");
             }catch (NumberFormatException e){
                 replyText.setHeight("100px");
                 followReplyText.setHeight("100px");
@@ -345,6 +473,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         // Display the result in the paragraph
         resultParagraph.setText(resultText);
     }
+
+
 
 
 }
