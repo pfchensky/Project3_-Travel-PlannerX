@@ -55,8 +55,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private DatePicker datePicker;
     private DatePicker datePicker2;
 
-    private TextField quotaText;
-    private Button quotaButton;
+    private TextField quoteText;
+    private Button quoteButton;
 
     private TextField budgetText;
     private Button budgetButton;
@@ -141,15 +141,15 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             askText.clear();
         }
     }
-    class QuotaClickListener
+    class quoteClickListener
             implements ComponentEventListener<ClickEvent<Button>> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
             String reply= conversation.askQuestion(resultParagraph.getText(), "Estimate the total cost range for this trip.  please present only number range without other description. the range shows in users' currency and exchange to local currency. please only present digit number range and both currencies signs. eg. 1 usd/7CNY");
-            quotaText.setValue(reply);
-            //quotaText.clear();
+            quoteText.setValue(reply);
+            //quoteText.clear();
         }
     }
 
@@ -310,14 +310,14 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         followReplyText.getStyle().remove("border");
 
 
-        quotaText = new TextField();
-        //quotaText.setLabel("you can get your budget");
-        quotaText.setWidth("100%");
+        quoteText = new TextField();
+        //quoteText.setLabel("you can get your budget");
+        quoteText.setWidth("100%");
 
-        quotaButton = new Button();
-        quotaButton.setText("Get a quota");
-        quotaButton.setWidth("min-content");
-        quotaButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        quoteButton = new Button();
+        quoteButton.setText("Get a quote");
+        quoteButton.setWidth("min-content");
+        quoteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         budgetText = new TextField();
         budgetText.setLabel("Please give me your budget in your currency");
@@ -410,9 +410,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         budgetButtonLayout.setWidthFull(); // Set the layout to full width
         budgetButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-        HorizontalLayout quotaButtonLayout = new HorizontalLayout(quotaButton);
-        quotaButtonLayout.setWidthFull(); // Set the layout to full width
-        quotaButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        HorizontalLayout quoteButtonLayout = new HorizontalLayout(quoteButton);
+        quoteButtonLayout.setWidthFull(); // Set the layout to full width
+        quoteButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
         // Layout configuration
         getContent().setWidth("100%");
@@ -421,10 +421,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, quotaButtonLayout,quotaText,budgetText,askButtonLayout,replyText,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, quoteButtonLayout,quoteText,budgetText,askButtonLayout,replyText,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
-        quotaButton.addClickListener(new QuotaClickListener());
+        quoteButton.addClickListener(new quoteClickListener());
     }
 
     record SampleItem(String value, String label, Boolean disabled) {
