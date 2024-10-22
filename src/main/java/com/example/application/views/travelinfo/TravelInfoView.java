@@ -116,7 +116,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         int minH=100;
         if(startDate!=null&&endDate!=null){
             long durationDay=ChronoUnit.DAYS.between(startDate,endDate)-1;
-            if(durationDay>=15&&durationDay<=30)
+            if(durationDay<5){
+                durationDay=5;
+            }
+            else if(durationDay>=15&&durationDay<=30)
             {durationDay=durationDay-4;}
             else if(durationDay>30){
                 durationDay=durationDay-8;
@@ -127,7 +130,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         }else if(!durationInput.isEmpty()){
             try{
                 int durationDay=Integer.parseInt(durationInput);
-                if(durationDay>=15&&durationDay<=30)
+                if(durationDay<5){
+                    durationDay=5;
+                }
+                else if(durationDay>=15&&durationDay<=30)
                 {durationDay=durationDay-4;}
                 else if(durationDay>30){
                     durationDay=durationDay-8;
@@ -230,6 +236,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         monthField.setWidth("100%");
 
         datePicker.setLabel("Start Date(If you don't have exactly date, you can leave it empty.)");
+        datePicker.setMin(LocalDate.now());
         datePicker.setWidth("100%");
 
         datePicker2.setLabel("End Date(If you don't have exactly date, you can leave it empty.)");
