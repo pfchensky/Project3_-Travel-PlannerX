@@ -73,8 +73,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
             // Ask the conversation model for a detailed daily travel plan
             String reply = conversation.askQuestion(resultParagraph.getText(),
-                    "generate a detailed daily travel plan for this trip.Try to spend around the budget of " +
-                            budget + " users' currency. Please only present the daily total cost and daily plan. " +
+                    "generate a detailed daily travel plan for this trip. If users have to many days to travel, please find nearby places(within the destination country) into their plans. All days their have must be planned. Try to spend around the budget of " +
+                            budget + " departure place's currency. Please only present the daily total cost and daily plan. " +
                             "Present results for each day as day# or date, activities, any highlight, " +
                             "accommodation, transportation, total cost, and daily hints. Please write Total Trip Cost: in the end.");
 
@@ -237,6 +237,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         }
         return apiKey;
     }
+    // adjust the sizes of reply box and followup box based on trip duration//
     private void adjustTextAreasHeight(){
         LocalDate startDate=datePicker.getValue();
         LocalDate endDate=datePicker2.getValue();
@@ -249,26 +250,26 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             if(durationDay<3)
             {durationDay=3;}
             else if(durationDay>=15&&durationDay<=30)
-            {durationDay=durationDay-5;}
+            {durationDay=durationDay-8;}
             else if(durationDay>30){
-                durationDay=durationDay-8;
+                durationDay=durationDay-10;
             }
             int height=(int)Math.max(minH,durationDay*rowsPerday*rowHeight);
-            replyText.setHeight(height+3+"px");
-            followReplyText.setHeight(height+3+"px");
+            replyText.setHeight(height+2+"px");
+            followReplyText.setHeight(height+2+"px");
         }else if(!durationInput.isEmpty()){
             try{
                 int durationDay=Integer.parseInt(durationInput);
                 if(durationDay<3)
                 {durationDay=3;}
                 else if(durationDay>=15&&durationDay<=30)
-                {durationDay=durationDay-5;}
+                {durationDay=durationDay-8;}
                 else if(durationDay>30){
-                    durationDay=durationDay-8;
+                    durationDay=durationDay-10;
                 }
                 int height=(int)Math.max(minH,durationDay*rowHeight*rowsPerday);
-                replyText.setHeight(height+3+"px");
-                followReplyText.setHeight(height+3+"px");
+                replyText.setHeight(height+2+"px");
+                followReplyText.setHeight(height+2+"px");
             }catch (NumberFormatException e){
                 replyText.setHeight("100px");
                 followReplyText.setHeight("100px");
@@ -284,7 +285,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         askText.setWidth("400px");
 
         askButton = new Button();
-        askButton.setText("Generate the plan");
+        askButton.setText("Plan the trip");
         askButton.setWidth("min-content");
         askButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -378,6 +379,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         durationField.addValueChangeListener(event ->adjustTextAreasHeight() );
         datePicker.addValueChangeListener(event ->adjustTextAreasHeight() );
         datePicker2.addValueChangeListener(event ->adjustTextAreasHeight() );
+        //let ending date later than starting date//
         datePicker.addValueChangeListener(event -> {
             LocalDate selectedStartDate = event.getValue();
             if (selectedStartDate != null) {
@@ -437,6 +439,7 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         comboBox.setItems(sampleItems);
         comboBox.setItemLabelGenerator(SampleItem::label);
     }
+    //get date picker schedule//
     private List<Integer> getDaysOfMonth(Month month, int year) {
         List<Integer> days = new ArrayList<>();
         int lengthOfMonth = month.length(LocalDate.of(year, month, 1).isLeapYear());
@@ -478,3 +481,4 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
 
 }
+
