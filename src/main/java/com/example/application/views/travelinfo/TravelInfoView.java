@@ -168,7 +168,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             collectAndDisplayTravelInfo();
             String newFollowUpQuestion = followText.getValue();
             //update the followUpQuestion//
-            String followUpQuestion=newFollowUpQuestion;
+            String followUpQuestion=" ";
+            followUpQuestion=followUpQuestion+newFollowUpQuestion;
             //use the currentPlan(which might include generateTripPlan) as context for followup//
             String contentForFollowUp = currentPlan+resultParagraph.getText();
 
