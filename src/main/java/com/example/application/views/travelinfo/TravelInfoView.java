@@ -23,7 +23,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import ai.peoplecode.OpenAIConversation;
-import com.vaadin.flow.component.notification.Notification;
+
 import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +40,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private TextField durationField;
     private TextField destinationField;
     private TextField monthField;
+    private String generatedTripPlan;
+    private String currentPlan;
 
     private Paragraph resultParagraph;
     private Button submitButton;
@@ -55,8 +57,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
     private DatePicker datePicker;
     private DatePicker datePicker2;
 
-    private TextField quoteText;
-    private Button quoteButton;
+    private TextField quotaText;
+    private Button quotaButton;
 
     private TextField budgetText;
     private Button budgetButton;
@@ -136,20 +138,23 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
             // Set the formatted reply with HTML tags to display the content properly
             replyText.getElement().setProperty("innerHTML", formattedReply.toString());
+            //save the reply for use in the follow-up listener//
+            generatedTripPlan=formattedReply.toString();
+            currentPlan=generatedTripPlan;
 
             // Clear the input field
             askText.clear();
         }
     }
-    class quoteClickListener
+    class QuoteClickListener
             implements ComponentEventListener<ClickEvent<Button>> {
 
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
             String reply= conversation.askQuestion(resultParagraph.getText(), "Estimate the total cost range for this trip.  please present only number range without other description. the range shows in users' currency and exchange to local currency. please only present digit number range and both currencies signs. eg. 1 usd/7CNY");
-            quoteText.setValue(reply);
-            //quoteText.clear();
+            quotaText.setValue(reply);
+            //quotaText.clear();
         }
     }
 
@@ -161,13 +166,18 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
             String followUpQuestion = followText.getValue() + budgetText.getValue();
-            String currentPlan = resultParagraph.getText();
+            //use the currentPlan(which might include generateTripPlan) as context for followup//
+            String contentForFollowUp = currentPlan !=null ? currentPlan: resultParagraph.getText();
 
             // Get the follow-up reply from the conversation model
-            String followUpReply = conversation.askQuestion(currentPlan, followUpQuestion);
+            String followUpReply = conversation.askQuestion(contentForFollowUp, followUpQuestion);
 
-            // Convert the follow-up reply string into a StringBuilder for manipulation
+            // Convert the follow-up reply string into a StringBuilder for manipulation//
             StringBuilder formattedFollowUpReply = new StringBuilder(followUpReply);
+            //Combine follow-up reply with the current plan//
+            formattedFollowUpReply.append("<h3>Current Plan:</h3>").append(contentForFollowUp);
+            formattedFollowUpReply.append("<h3>Follow-Up Question:</h3>").append(followUpQuestion);
+            formattedFollowUpReply.append("<h3>Follow-up Reply:</h3>").append(followUpReply);
 
             // Regular expression to match date format YYYY-MM-DD
             String datePattern = "\\d{4}-\\d{2}-\\d{2}";
@@ -250,9 +260,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             if(durationDay<3)
             {durationDay=3;}
             else if(durationDay>=15&&durationDay<=30)
-            {durationDay=durationDay-8;}
+            {durationDay=durationDay-5;}
             else if(durationDay>30){
-                durationDay=durationDay-10;
+                durationDay=durationDay-8;
             }
             int height=(int)Math.max(minH,durationDay*rowsPerday*rowHeight);
             replyText.setHeight(height+2+"px");
@@ -263,9 +273,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
                 if(durationDay<3)
                 {durationDay=3;}
                 else if(durationDay>=15&&durationDay<=30)
-                {durationDay=durationDay-8;}
+                {durationDay=durationDay-5;}
                 else if(durationDay>30){
-                    durationDay=durationDay-10;
+                    durationDay=durationDay-8;
                 }
                 int height=(int)Math.max(minH,durationDay*rowHeight*rowsPerday);
                 replyText.setHeight(height+2+"px");
@@ -310,14 +320,14 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         followReplyText.getStyle().remove("border");
 
 
-        quoteText = new TextField();
-        //quoteText.setLabel("you can get your budget");
-        quoteText.setWidth("100%");
+        quotaText = new TextField();
+        //quotaText.setLabel("you can get your budget");
+        quotaText.setWidth("100%");
 
-        quoteButton = new Button();
-        quoteButton.setText("Get a quote");
-        quoteButton.setWidth("min-content");
-        quoteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        quotaButton = new Button();
+        quotaButton.setText("Get a quote");
+        quotaButton.setWidth("min-content");
+        quotaButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         budgetText = new TextField();
         budgetText.setLabel("Please give me your budget in your currency");
@@ -410,9 +420,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         budgetButtonLayout.setWidthFull(); // Set the layout to full width
         budgetButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-        HorizontalLayout quoteButtonLayout = new HorizontalLayout(quoteButton);
-        quoteButtonLayout.setWidthFull(); // Set the layout to full width
-        quoteButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+        HorizontalLayout quotaButtonLayout = new HorizontalLayout(quotaButton);
+        quotaButtonLayout.setWidthFull(); // Set the layout to full width
+        quotaButtonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
         // Layout configuration
         getContent().setWidth("100%");
@@ -421,10 +431,10 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         getContent().setAlignItems(Alignment.CENTER);
 
         // Add components to layout
-        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, quoteButtonLayout,quoteText,budgetText,askButtonLayout,replyText,followText,followButtonLayout,followReplyText);
+        getContent().add(travelersField, petComboBox, childrenComboBox, departureField, destinationField,datePicker,datePicker2,monthField,durationField, quotaButtonLayout,quotaText,budgetText,askButtonLayout,replyText,followText,followButtonLayout,followReplyText);
         askButton.addClickListener(new MyClickListener());
         followButton.addClickListener(new FollowUpClickListener());
-        quoteButton.addClickListener(new quoteClickListener());
+        quotaButton.addClickListener(new QuoteClickListener());
     }
 
     record SampleItem(String value, String label, Boolean disabled) {
@@ -481,4 +491,3 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
 
 }
-
