@@ -75,14 +75,15 @@ public class TravelInfoView extends Composite<VerticalLayout> {
 
             // Ask the conversation model for a detailed daily travel plan
             String reply = conversation.askQuestion(resultParagraph.getText(),
-                    "generate a detailed daily travel plan for this trip. If users have to many days to travel, please find nearby places(within the destination country) into their plans. All days their have must be planned. Try to spend around the budget of " +
-                            budget + " departure place's currency. Please only present the daily total cost and daily plan. " +
+                    "generate a detailed daily travel plan for this trip. If users have to many days to travel, please find nearby places(within the destination country) into their plans. All days their have must be planned. All budget of " +
+                            budget + " in departure place's currency must be spent. Please only present the daily total cost and daily plan. " +
                             "Present results for each day as day# or date, activities, any highlight, " +
-                            "accommodation, transportation, total cost, and daily hints. Please write Total Trip Cost: in the end.");
+                            "accommodation, transportation, total cost, and daily hints. Please write Total Trip Cost: in the end including payment for flight ticket.");
 
             // Convert the reply string into a StringBuilder for manipulation
             StringBuilder formattedReply = new StringBuilder(reply);
-
+            generatedTripPlan=reply;
+            currentPlan=generatedTripPlan;
             // Regular expression to match date format YYYY-MM-DD
             String datePattern = "\\d{4}-\\d{2}-\\d{2}";
             Pattern pattern = Pattern.compile(datePattern);
@@ -139,8 +140,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             // Set the formatted reply with HTML tags to display the content properly
             replyText.getElement().setProperty("innerHTML", formattedReply.toString());
             //save the reply for use in the follow-up listener//
-            generatedTripPlan=formattedReply.toString();
-            currentPlan=generatedTripPlan;
+
+
 
             // Clear the input field
             askText.clear();
@@ -165,19 +166,20 @@ public class TravelInfoView extends Composite<VerticalLayout> {
         @Override
         public void onComponentEvent(ClickEvent<Button> event) {
             collectAndDisplayTravelInfo();
-            String followUpQuestion = followText.getValue() + budgetText.getValue();
+            String newFollowUpQuestion = followText.getValue();
+            //update the followUpQuestion//
+            String followUpQuestion=newFollowUpQuestion;
             //use the currentPlan(which might include generateTripPlan) as context for followup//
-            String contentForFollowUp = currentPlan !=null ? currentPlan: resultParagraph.getText();
+            String contentForFollowUp = currentPlan+resultParagraph.getText();
 
             // Get the follow-up reply from the conversation model
-            String followUpReply = conversation.askQuestion(contentForFollowUp, followUpQuestion);
-
+            String followUpReply = conversation.askQuestion(contentForFollowUp, followUpQuestion+ budgetText.getValue());
+            //update the current plan//
+            currentPlan= followUpReply;
             // Convert the follow-up reply string into a StringBuilder for manipulation//
             StringBuilder formattedFollowUpReply = new StringBuilder(followUpReply);
-            //Combine follow-up reply with the current plan//
-            formattedFollowUpReply.append("<h3>Current Plan:</h3>").append(contentForFollowUp);
-            formattedFollowUpReply.append("<h3>Follow-Up Question:</h3>").append(followUpQuestion);
-            formattedFollowUpReply.append("<h3>Follow-up Reply:</h3>").append(followUpReply);
+
+
 
             // Regular expression to match date format YYYY-MM-DD
             String datePattern = "\\d{4}-\\d{2}-\\d{2}";
@@ -235,6 +237,8 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             // Set the formatted follow-up reply with HTML tags to display the content properly
             followReplyText.getElement().setProperty("innerHTML", formattedFollowUpReply.toString());
 
+
+
             // Clear the input field
             followText.clear();
         }
@@ -259,7 +263,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
             long durationDay=ChronoUnit.DAYS.between(startDate,endDate)-1;
             if(durationDay<3)
             {durationDay=3;}
-            else if(durationDay>=15&&durationDay<=30)
+            else if(durationDay>=10&&durationDay<=15)
+            {durationDay=durationDay-3;}
+            else if(durationDay>=16&&durationDay<=30)
             {durationDay=durationDay-5;}
             else if(durationDay>30){
                 durationDay=durationDay-8;
@@ -272,7 +278,9 @@ public class TravelInfoView extends Composite<VerticalLayout> {
                 int durationDay=Integer.parseInt(durationInput);
                 if(durationDay<3)
                 {durationDay=3;}
-                else if(durationDay>=15&&durationDay<=30)
+                else if(durationDay>=10&&durationDay<=15)
+                {durationDay=durationDay-3;}
+                else if(durationDay>=16&&durationDay<=30)
                 {durationDay=durationDay-5;}
                 else if(durationDay>30){
                     durationDay=durationDay-8;
