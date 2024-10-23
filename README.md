@@ -1,9 +1,10 @@
-USF’s CS 514 Project 3 
-App Name: Travel PlannerX 
-Group: Pengfang Chen, Lexi Lin
-Project Description:
+## USF’s CS 514 Project 3 
+## App Name: Travel PlannerX 
+## Group: Pengfang Chen, Lexi Lin
+## Project Description:
 The goal of this app is to use AI to guide users through a series of conversations to create a personalized travel plan. The AI will dynamically generate the itinerary and provide recommendations based on user inputs. The users need to enter some information, the size of their travel group, with or without children and pets, departure, destination, and travel dates. If users don’t have exactly date to travel, they can only enter duration of trip and roughly month they plan to go. If they do, they can simply pick starting date and ending date in a calendar. After analyzing these inputs, AI will respond with the budget range of this trip. The users need to confirm with AI for their budget, and make AI plan the trip around this budget. As for the follow-up, the users can modify the plan at any time by entering additional requirement and the AI will instantly update the itinerary to ensure that it meets the users’ expectations.
-In this project, our main efforts:
+## In this project, our main efforts:
+
 1.	We create two date-pickers to collect information about travel dates. We make starting date no later than today and ending date no later than the starting date. It is more practical.
 2.	We implement a click-listener to get a quote for this trip based on travel info. The users can have a rough idea how much they need to spend for this trip.
 3.	We implement two click-listeners to produce AI output for planning the trip. The first click-listener responds based on users’ travel information including the users’ budget. We collect and save all previous follow-up requirements, the second click-listener updates based on the last plan and all the users’ follow-up requirements. 
